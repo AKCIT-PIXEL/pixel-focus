@@ -1,0 +1,60 @@
+{
+  "photos": [
+    {
+      "name": "0",
+      "meta": "0/meta.json",
+      "thumb": "0/input.webp",
+      "size": [
+        1024,
+        672
+      ],
+      "models": [
+        "official",
+        "synth-2gpu",
+        "v2-fase2"
+      ]
+    },
+    {
+      "name": "cello",
+      "meta": "cello/meta.json",
+      "thumb": "cello/input.webp",
+      "size": [
+        1024,
+        672
+      ],
+      "models": [
+        "official",
+        "synth-2gpu",
+        "v2-fase2"
+      ]
+    },
+    {
+      "name": "group_1",
+      "meta": "group_1/meta.json",
+      "thumb": "group_1/input.webp",
+      "size": [
+        1024,
+        672
+      ],
+      "models": [
+        "official",
+        "synth-2gpu",
+        "v2-fase2"
+      ]
+    },
+    {
+      "name": "kid",
+      "meta": "kid/meta.json",
+      "thumb": "kid/input.webp",
+      "size": [
+        976,
+        1024
+      ],
+      "models": [
+        "official",
+        "synth-2gpu",
+        "v2-fase2"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "name": "group_1",
+  "source": "group_1.png",
+  "source_sha256": "111a662fa2726f93cccba2738eb0cd25de802ca82e9f78bc7e5cd96f45d6c197",
+  "size": [
+    1024,
+    672
+  ],
+  "deblur": {
+    "skipped": false,
+    "repo": "nycu-cplab/Genfocus-Model",
+    "filename": "deblurNet.safetensors",
+    "seed": 42
+  },
+  "depth": {
+    "model": "DepthPro",
+    "repo": "nycu-cplab/Genfocus-Model",
+    "filename": "checkpoints/depth_pro.pt"
+  },
+  "disp_range": [
+    0.11213418841362,
+    0.4723063111305237
+  ],
+  "planes": [
+    {
+      "disp_focus": 0.12609311938285828,
+      "quantile": 0.04,
+      "disp_norm": 0.03875627814818428,
+      "index": 0
+    },
+    {
+      "disp_focus": 0.20769396424293518,
+      "quantile": 0.1236,
+      "disp_norm": 0.2653169687550345,
+      "index": 1
+    },
+    {
+      "disp_focus": 0.22915373742580414,
+      "quantile": 0.2073,
+      "disp_norm": 0.32489896255563855,
+      "index": 2
+    },
+    {
+      "disp_focus": 0.24328471720218658,
+      "quantile": 0.2909,
+      "disp_norm": 0.3641329256669075,
+      "index": 3
+    },
+    {
+      "disp_focus": 0.2681000530719757,
+      "quantile": 0.3745,
+      "disp_norm": 0.4330314725133386,
+      "index": 4
+    },
+    {
+      "disp_focus": 0.29115501046180725,
+      "quantile": 0.4582,
+      "disp_norm": 0.4970424159920287,
+      "index": 5
+    },
+    {
+      "disp_focus": 0.3127110004425049,
+      "quantile": 0.5418,
+      "disp_norm": 0.5568915509503184,
+      "index": 6
+    },
+    {
+      "disp_focus": 0.3545788526535034,
+      "quantile": 0.6255,
+      "disp_norm": 0.6731355619947456,
+      "index": 7
+    },
+    {
+      "disp_focus": 0.36660897731781006,
+      "quantile": 0.7091,
+      "disp_norm": 0.706536605289155,
+      "index": 8
+    },
+    {
+      "disp_focus": 0.3819461762905121,
+      "quantile": 0.7927,
+      "disp_norm": 0.7491195760560433,
+      "index": 9
+    },
+    {
+      "disp_focus": 0.40819188952445984,
+      "quantile": 0.8764,
+      "disp_norm": 0.8219894945715774,
+      "index": 10
+    },
+    {
+      "disp_focus": 0.44152697920799255,
+      "quantile": 0.96,
+      "disp_norm": 0.9145427144934152,
+      "index": 11
+    }
+  ],
+  "ks": [
+    5,
+    10,
+    20,
+    30,
+    40,
+    50
+  ],
+  "k0": "aif.webp",
+  "frame_pattern": "{model}/f{plane:02d}_k{k_index}.webp",
+  "models": [
+    {
+      "name": "official",
+      "repo": "nycu-cplab/Genfocus-Model",
+      "filename": "bokehNet.safetensors",
+      "step": null,
+      "complete": true
+    },
+    {
+      "name": "synth-2gpu",
+      "repo": "juliadollis/genrefocus-bokehnet-synth-2gpu",
+      "filename": "bokeh.safetensors",
+      "step": null,
+      "complete": true
+    },
+    {
+      "name": "v2-fase2",
+      "repo": "juliadollis/genrefocus-bokehnet-v2-fase2",
+      "filename": "bokeh_step60000.safetensors",
+      "step": 60000,
+      "complete": true
+    }
+  ],
+  "steps": 28,
+  "seed": 1234,
+  "coc_example": {
+    "plane": 6,
+    "k": 30
+  },
+  "files": {
+    "input": "input.webp",
+    "aif": "aif.webp",
+    "disp": "disp.png",
+    "depth_vis": "depth_vis.webp",
+    "coc_example": "coc_example.webp"
+  }
+}

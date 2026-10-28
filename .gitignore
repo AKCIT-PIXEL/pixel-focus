@@ -1,0 +1,9 @@
+.venv/
+work/
+__pycache__/
+*.pyc
+*.tmp
+.DS_Store
+node_modules/
+dist/
+.astro/

@@ -1,0 +1,153 @@
+---
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+---
+
+<!-- 3. Refocagem interativa -->
+<section class="wrap py-8" id="refocus">
+  <h2 class="section-title">{s.refocus.title}</h2>
+  <div class="section-lead text-center">
+    <p>{s.refocus.lead}</p>
+    <p>{s.refocus.leadModels}</p>
+  </div>
+  <div id="refocus-widget">
+    <div class="placeholder-box">
+      <span class="tag-soon">{s.common.soon}</span>
+      <p>{s.refocus.placeholder}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { el } from '../lib/dom';
+  import { createCaseButtons, createCrossfadeStage, showNoData } from '../lib/widgets';
+  import { aspectRatio, frameUrl, photoFile, loadRefocusData, nearestPlane, type RefocusItem, type RefocusMeta, type RefocusPhoto } from '../lib/refocus';
+  import { modelLabel } from '../lib/labels';
+  import { t, langFromDocument } from '../lib/i18n';
+
+  const s = t(langFromDocument());
+
+  // Clique escolhe o plano de foco pela disparidade; slider escolhe K.
+  function initRefocus(container: HTMLElement, items: RefocusItem[]): void {
+    const stage = createCrossfadeStage('refocus-stage', s.refocus.stage);
+    const marker = el('div', { class: 'focus-marker' });
+    // Dica sobre a foto; some depois do primeiro clique que define o foco.
+    const hint = el('div', { class: 'refocus-hint', text: s.refocus.hint });
+    stage.root.append(marker, hint);
+
+    // Faixa de profundidade: marcas nos planos (planes[].disp_norm) e o plano atual em destaque.
+    const depthTicks = el('div', { class: 'depth-ticks' });
+    const depthStrip = el('div', { class: 'depth-strip', 'aria-hidden': 'true' }, [
+      el('span', { class: 'depth-end', text: s.refocus.far }),
+      el('div', { class: 'depth-track' }, [depthTicks]),
+      el('span', { class: 'depth-end', text: s.refocus.near }),
+    ]);
+
+    const kInput = el('input', { type: 'range', class: 'range', min: '0', step: '1', id: 'refocus-k', 'aria-label': s.refocus.kAria });
+    const kLabelEl = el('span');
+    const status = el('p', { class: 'figure-caption', 'aria-live': 'polite' });
+    const modelButtonsHolder = el('div');
+
+    // Canvas escondido com o disp.png da foto atual, para ler a disparidade.
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+    let dispReady = false;
+
+    let item = items[0];
+    let model = item.models[0];
+    let plane = 0;
+
+    function render(): void {
+      const kIndex = Number(kInput.value);
+      const { photo, meta } = item;
+      // K = 0 é a imagem toda em foco (aif.webp); o índice k_j do quadro é slider − 1.
+      const src = kIndex === 0
+        ? photoFile(photo, meta, 'k0')
+        : frameUrl(photo, meta, model, plane, kIndex - 1);
+      stage.show(src);
+      kLabelEl.textContent = kIndex === 0 ? s.refocus.k0 : `K = ${meta.ks[kIndex - 1]}`;
+      kInput.setAttribute('aria-valuetext', kLabelEl.textContent);
+      status.textContent = s.refocus.status(plane + 1, meta.planes.length, modelLabel(model));
+      [...depthTicks.children].forEach((tick, i) => tick.classList.toggle('is-current', i === plane));
+    }
+
+    function renderDepthTicks(meta: RefocusMeta): void {
+      depthTicks.replaceChildren(...meta.planes.map((p) => el('span', {
+        class: 'depth-tick',
+        style: `left: ${(p.disp_norm * 100).toFixed(1)}%`,
+      })));
+    }
+
+    function loadDisparity(meta: RefocusMeta, photo: RefocusPhoto): void {
+      dispReady = false;
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+        dispReady = true;
+      };
+      img.onerror = () => console.warn(`disp.png unavailable for ${photo.name}`);
+      img.src = photoFile(photo, meta, 'disp');
+    }
+
+    stage.root.addEventListener('click', (event) => {
+      if (!dispReady) return;
+      const rect = stage.root.getBoundingClientRect();
+      const fx = (event.clientX - rect.left) / rect.width;
+      const fy = (event.clientY - rect.top) / rect.height;
+      const x = Math.min(canvas.width - 1, Math.max(0, Math.floor(fx * canvas.width)));
+      const y = Math.min(canvas.height - 1, Math.max(0, Math.floor(fy * canvas.height)));
+      // O navegador decodifica o PNG de 16 bits para 8 bits no canvas, então
+      // o valor lido / 255 está na mesma escala 0..1 de planes[].disp_norm.
+      const value = ctx.getImageData(x, y, 1, 1).data[0] / 255;
+      plane = nearestPlane(item.meta.planes, value);
+      marker.style.left = `${fx * 100}%`;
+      marker.style.top = `${fy * 100}%`;
+      marker.style.display = 'block';
+      hint.classList.add('is-hidden');
+      if (Number(kInput.value) === 0) kInput.value = String(item.meta.ks.length);
+      render();
+    });
+    kInput.addEventListener('input', render);
+
+    function selectPhoto(i: number): void {
+      item = items[i];
+      const { meta, photo, models } = item;
+      if (!models.includes(model)) model = models[0];
+      plane = Math.floor(meta.planes.length / 2);
+      container.style.setProperty('--ar', aspectRatio(item));
+      kInput.max = String(meta.ks.length);
+      // Abre no K máximo: é onde a diferença entre os modelos aparece.
+      kInput.value = String(meta.ks.length);
+      marker.style.display = 'none';
+      loadDisparity(meta, photo);
+      renderDepthTicks(meta);
+      const modelButtons = createCaseButtons(models.map(modelLabel), (j) => {
+        model = models[j];
+        render();
+      }, models.indexOf(model));
+      modelButtonsHolder.replaceChildren(modelButtons.root);
+      render();
+    }
+
+    const photoButtons = createCaseButtons(items.map((_, i) => s.common.photoN(i + 1)), selectPhoto);
+    const controls = el('div', { class: 'refocus-controls' }, [
+      el('label', { for: 'refocus-k' }, [s.refocus.kLabel, kLabelEl]),
+      kInput,
+      depthStrip,
+    ]);
+    container.replaceChildren(el('div', { class: 'refocus-layout' }, [
+      el('div', { class: 'refocus-pickers' }, [photoButtons.root, modelButtonsHolder]),
+      stage.root,
+      controls,
+      status,
+    ]));
+  }
+
+  const container = document.getElementById('refocus-widget');
+  if (container) {
+    loadRefocusData().then((items) => initRefocus(container, items), (err) => showNoData(container, err));
+  }
+</script>

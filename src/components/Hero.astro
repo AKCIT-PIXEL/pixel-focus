@@ -1,0 +1,81 @@
+---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { asset } from '../lib/asset';
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+
+// A versão AV1/WebM é opcional (make_teaser.sh só a gera com libsvtav1); entra antes da MP4 se existir.
+// O build roda na raiz do projeto (pnpm build).
+const hasWebm = existsSync(join(process.cwd(), 'static/teaser/teaser.webm'));
+
+const links = [
+  { href: 'https://arxiv.org/abs/2512.16923', label: s.hero.paperLink },
+  { href: 'https://huggingface.co/AKCITPixel3', label: s.hero.hfLink },
+];
+---
+
+<!-- 1. Cabeçalho -->
+<header class="wrap pt-10 pb-6 text-center sm:pt-14" id="top">
+  <h1 class="text-[1.8rem] leading-tight sm:text-[2.6rem]">{s.hero.title}</h1>
+  <p class="mt-3 font-display text-lg text-ink-soft sm:text-xl">{s.hero.subtitle}</p>
+  <p class="mt-4 font-display text-lg text-ink">{s.hero.team}</p>
+  <!-- Nomes e ordem dos autores pendentes -->
+  <p class="mt-1 font-display text-sm text-muted sm:text-base">
+    {s.hero.affiliation}
+  </p>
+  <div class="mt-5 flex flex-wrap justify-center gap-2">
+    {
+      links.map((link) => (
+        <a
+          class="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm text-white no-underline hover:bg-black hover:no-underline"
+          href={link.href}
+          target="_blank"
+          rel="noopener"
+        >
+          {link.label}
+        </a>
+      ))
+    }
+    <span class="inline-flex min-h-11 cursor-not-allowed items-center rounded-full bg-ink/70 px-5 text-sm text-white" title={s.common.soon} aria-disabled="true">
+      {s.hero.codeSoon}
+    </span>
+  </div>
+</header>
+
+<section class="wrap pb-6" aria-label={s.hero.videoSection}>
+  <div class="overflow-hidden rounded-[10px] bg-[#f5f5f5]">
+    <!-- Gerado por scripts/make_teaser.sh a partir dos quadros pré-renderizados -->
+    <video
+      id="teaser-video"
+      class="block h-auto w-full"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      poster={asset('teaser/poster.webp')}
+      width="1024"
+      height="672"
+      aria-label={s.hero.videoLabel}
+    >
+      {hasWebm && <source src={asset('teaser/teaser.webm')} type='video/webm; codecs="av01.0.05M.08"' />}
+      <source src={asset('teaser/teaser.mp4')} type="video/mp4" />
+    </video>
+    <script is:inline>
+      // Movimento reduzido: sem autoplay; fica o pôster e os controles para o usuário dar play.
+      // Inline e síncrono, para rodar antes de o autoplay começar.
+      (function () {
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var video = document.getElementById('teaser-video');
+        video.autoplay = false;
+        video.removeAttribute('autoplay');
+        video.pause();
+        video.preload = 'metadata';
+        video.controls = true;
+      })();
+    </script>
+  </div>
+  <p class="mx-auto mt-5 max-w-[760px] text-center font-display text-lg leading-relaxed text-ink-soft sm:text-xl" set:html={s.hero.tagline} />
+</section>

@@ -1,0 +1,607 @@
+/* Estilo da página, na linha das project pages Nerfies. Utilitários Tailwind no markup;
+   aqui ficam o tema e as classes dos widgets montados por JS. */
+@import 'tailwindcss';
+
+/* Fontes auto-hospedadas (só o subconjunto latino, que cobre ç, ã, é...) */
+@import '@fontsource/google-sans/latin-400.css';
+@import '@fontsource/google-sans/latin-600.css';
+@import '@fontsource/noto-sans/latin-400.css';
+@import '@fontsource/noto-sans/latin-700.css';
+
+@theme {
+  --font-sans: 'Noto Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Google Sans', 'Noto Sans', ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #363636;
+  --color-ink-soft: #4a4a4a;
+  --color-muted: #666;
+  --color-line: #dbdbdb;
+  --color-paper: #fafafa;
+  --color-accent: hsl(204 86% 53%);
+  --color-accent-strong: hsl(204 80% 34%);
+}
+
+@layer base {
+  :root {
+    /* Altura do menu fixo; maior em telas de toque para os chips terem ≥ 44 px. */
+    --nav-h: 2.75rem;
+  }
+
+  @media (pointer: coarse) {
+    :root {
+      --nav-h: 3.25rem;
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-white font-sans text-ink-soft antialiased;
+  }
+
+  /* Âncoras não ficam escondidas atrás da navegação fixa */
+  section[id] {
+    scroll-margin-top: var(--nav-h);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display font-semibold text-ink;
+  }
+
+  code {
+    @apply rounded bg-[#f5f5f5] px-[0.4em] py-[0.15em] text-[0.875em] text-[#b5223f];
+  }
+
+  a {
+    @apply text-accent-strong underline-offset-2 hover:underline;
+  }
+
+  /* Links no meio do texto: sublinhados, não só pela cor */
+  p a {
+    @apply underline;
+  }
+
+  sub {
+    font-size: 0.75em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer components {
+  /* Container das seções (largura do "is-max-desktop" do Bulma) */
+  .wrap {
+    @apply mx-auto w-full max-w-[960px] px-4 sm:px-6;
+  }
+
+  .section-title {
+    @apply mb-4 text-center text-[1.6rem] leading-tight sm:text-[2rem];
+  }
+
+  .section-lead {
+    @apply mx-auto mb-6 max-w-[760px] space-y-3 leading-relaxed;
+  }
+
+  /* Placeholder das seções que ainda não têm assets */
+  .placeholder-box {
+    @apply rounded-[10px] border-2 border-dashed border-line bg-paper px-6 py-10 text-center text-muted;
+  }
+
+  .tag-soon {
+    @apply mb-3 inline-block rounded bg-[#fffaeb] px-2 py-0.5 text-xs text-[#7a5a00];
+  }
+
+  /* Botões de caso/cena/modelo */
+  .btn {
+    @apply inline-flex min-h-9 cursor-pointer items-center justify-center rounded-full border border-line bg-white px-3.5 text-sm text-ink transition-colors hover:border-[#b5b5b5];
+  }
+
+  .btn.is-selected {
+    @apply border-ink bg-ink text-white;
+  }
+
+  @media (pointer: coarse) {
+    .btn {
+      @apply min-h-11 px-4;
+    }
+  }
+
+  .case-buttons {
+    @apply mb-4 flex flex-wrap justify-center gap-2;
+  }
+
+  .figure-caption {
+    @apply mt-2.5 text-center text-sm text-ink-soft;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Slider de faixa (K): trilho fino, alça maior em telas de toque      */
+  /* ------------------------------------------------------------------ */
+  .range {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 1.75rem;
+    background: transparent;
+    cursor: pointer;
+    --thumb: 18px;
+    --thumb-border: 2px;
+  }
+
+  .range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--color-line);
+  }
+
+  .range::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--color-line);
+  }
+
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    width: var(--thumb);
+    height: var(--thumb);
+    margin-top: calc((6px - var(--thumb)) / 2);
+    border: var(--thumb-border) solid #fff;
+    border-radius: 50%;
+    background: var(--color-ink);
+    background-clip: border-box;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25);
+  }
+
+  .range::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--thumb);
+    height: var(--thumb);
+    border: var(--thumb-border) solid #fff;
+    border-radius: 50%;
+    background: var(--color-ink);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25);
+  }
+
+  /* Toque: a alça ocupa 44 px (borda transparente), o desenho continua pequeno */
+  @media (pointer: coarse) {
+    .range {
+      height: 2.75rem;
+      --thumb: 44px;
+      --thumb-border: 12px;
+    }
+
+    .range::-webkit-slider-thumb {
+      border-color: transparent;
+      background-clip: padding-box;
+      box-shadow: none;
+    }
+
+    .range::-moz-range-thumb {
+      border-color: transparent;
+      background-clip: padding-box;
+      box-shadow: none;
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Slider antes/depois: duas imagens empilhadas, a de cima recortada   */
+  /* com clip-path e uma alça arrastável (mouse e toque).                */
+  /* A largura é limitada pela altura da tela (dvh) mantendo a proporção. */
+  /* ------------------------------------------------------------------ */
+  .ba-slider {
+    position: relative;
+    width: min(100%, calc(var(--ar, 1.4545) * 70dvh));
+    min-height: 4rem;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+    cursor: ew-resize;
+    background: #eee;
+  }
+
+  .ba-slider img {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  .ba-slider .ba-after {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    object-fit: cover;
+    clip-path: inset(0 0 0 50%);
+  }
+
+  .ba-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    margin-left: -1.5px;
+    background: #fff;
+    box-shadow: 0 0 6px rgb(0 0 0 / 0.4);
+    pointer-events: none;
+  }
+
+  .ba-handle::after {
+    content: '\2039\00a0\203A';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 1.3rem;
+    font-weight: bold;
+    line-height: 38px;
+    text-align: center;
+    box-shadow: 0 0 6px rgb(0 0 0 / 0.4);
+  }
+
+  @media (pointer: coarse) {
+    .ba-handle::after {
+      width: 44px;
+      height: 44px;
+      line-height: 42px;
+    }
+  }
+
+  .ba-label {
+    position: absolute;
+    top: 0.6rem;
+    max-width: calc(50% - 1rem);
+    padding: 0.15rem 0.6rem;
+    border-radius: 4px;
+    background: rgb(0 0 0 / 0.6);
+    color: #fff;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    pointer-events: none;
+  }
+
+  .ba-label.is-left {
+    left: 0.6rem;
+  }
+
+  .ba-label.is-right {
+    right: 0.6rem;
+    text-align: right;
+  }
+
+  @media (max-width: 480px) {
+    .ba-label {
+      font-size: 0.7rem;
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Seção 5: varredura de K por modelo                                  */
+  /* ------------------------------------------------------------------ */
+  .sweep-card {
+    @apply h-full rounded-[10px] bg-paper p-3;
+  }
+
+  .sweep-card img {
+    @apply block h-auto w-full rounded-md bg-[#eee];
+  }
+
+  .sweep-title {
+    @apply mb-1.5 font-display font-semibold text-ink;
+  }
+
+  .sweep-card .range {
+    @apply mt-2;
+  }
+
+  .sweep-label {
+    @apply min-h-[2.6em] text-[0.85rem] text-ink-soft;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Seções 2 e 3: pipeline e refocagem                                  */
+  /* ------------------------------------------------------------------ */
+  .pipeline-steps {
+    @apply mb-4 flex flex-wrap items-center justify-center gap-1.5;
+  }
+
+  .step-arrow {
+    @apply text-[#b5b5b5];
+  }
+
+  .pipeline-stage,
+  .refocus-stage {
+    position: relative;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #eee;
+    aspect-ratio: var(--ar, 1.5238);
+  }
+
+  .pipeline-stage {
+    width: min(100%, calc(var(--ar, 1.5238) * 65dvh));
+  }
+
+  /* Limita a altura à tela (foto + controles cabem juntos no desktop),
+     mantendo a proporção da foto (--ar, definida pelo JS). */
+  .refocus-stage {
+    cursor: crosshair;
+    width: min(100%, calc(var(--ar, 1.5238) * 56dvh));
+  }
+
+  .refocus-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 0.9rem;
+    transform: translateX(-50%);
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.6);
+    color: #fff;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  .refocus-hint.is-hidden {
+    opacity: 0;
+  }
+
+  .pipeline-stage img,
+  .refocus-stage img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  /* Crossfade: a imagem de trás fica por cima e aparece por opacidade */
+  .pipeline-stage img.layer-top,
+  .refocus-stage img.layer-top {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+
+  .pipeline-stage img.layer-top.is-visible,
+  .refocus-stage img.layer-top.is-visible {
+    opacity: 1;
+  }
+
+  /* Paralaxe 2.5D da etapa DepthPro, por cima do crossfade */
+  .parallax-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+
+  .parallax-canvas.is-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .parallax-canvas.is-dragging {
+    cursor: grabbing;
+  }
+
+  .focus-marker {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgb(0 0 0 / 0.6);
+    pointer-events: none;
+    display: none;
+  }
+
+  .refocus-controls {
+    width: min(100%, max(320px, calc(var(--ar, 1.5238) * 56dvh)));
+    margin: 0.6rem auto 0;
+  }
+
+  .refocus-controls label {
+    @apply text-xs text-muted;
+  }
+
+  /* Faixa de profundidade: onde o plano de foco atual cai na disparidade */
+  .depth-strip {
+    @apply mt-1.5 flex items-center gap-2 text-[0.7rem] text-muted;
+  }
+
+  .depth-track {
+    position: relative;
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #2b2b2b, #e8e8e8);
+  }
+
+  .depth-tick {
+    position: absolute;
+    top: -2px;
+    width: 2px;
+    height: 12px;
+    margin-left: -1px;
+    background: rgb(255 255 255 / 0.85);
+    box-shadow: 0 0 1px rgb(0 0 0 / 0.6);
+    transition: all 0.25s ease;
+  }
+
+  .depth-tick.is-current {
+    top: -5px;
+    width: 4px;
+    height: 18px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: var(--color-accent);
+  }
+
+  /* Celular deitado: foto à esquerda, botões e controles à direita, palco limitado à altura útil */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .refocus-layout {
+      /* Largura explícita da foto (altura útil × proporção, até 62vw), sem depender do conteúdo */
+      --stage-w: min(62vw, calc(var(--ar, 1.5238) * (100dvh - var(--nav-h) - 1.5rem)));
+      display: grid;
+      grid-template-columns: var(--stage-w) minmax(12rem, 1fr);
+      grid-template-areas:
+        'stage pickers'
+        'stage controls'
+        'stage status';
+      grid-template-rows: 1fr auto 1fr;
+      gap: 0 1rem;
+    }
+
+    .refocus-layout .refocus-pickers {
+      grid-area: pickers;
+      align-self: end;
+    }
+
+    .refocus-layout .refocus-stage {
+      grid-area: stage;
+      width: var(--stage-w);
+    }
+
+    .refocus-layout .refocus-controls {
+      grid-area: controls;
+      width: 100%;
+      margin: 0;
+    }
+
+    .refocus-layout .figure-caption {
+      grid-area: status;
+      align-self: start;
+    }
+
+    .refocus-pickers .case-buttons {
+      @apply mb-2 justify-start;
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Seção 7: diagrama do método (SVG gerado no build)                   */
+  /* ------------------------------------------------------------------ */
+  .method-diagram svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .method-diagram .md-vertical {
+    max-width: 340px;
+  }
+
+  .method-diagram .md-box {
+    fill: var(--color-paper);
+    stroke: var(--color-line);
+    stroke-width: 1;
+  }
+
+  .method-diagram .md-label {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    fill: var(--color-ink);
+    text-anchor: middle;
+  }
+
+  .method-diagram .md-sub {
+    font-size: 11px;
+    fill: var(--color-muted);
+    text-anchor: middle;
+  }
+
+  .method-diagram .md-formula {
+    font-family: ui-monospace, monospace;
+    font-size: 10px;
+    fill: hsl(204 70% 36%);
+  }
+
+  .method-diagram .md-arrow path {
+    fill: none;
+    stroke: #7a7a7a;
+    stroke-width: 2;
+  }
+
+  /* Animação: cada etapa aparece em sequência e a seta "se desenha" até a próxima.
+     Só esconde as etapas quando há JS para revelá-las (classe md-animate). */
+  .method-diagram.md-animate .md-stage {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition-delay: calc(var(--i) * 0.45s);
+  }
+
+  .method-diagram.md-animate .md-arrow path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.35s ease;
+    transition-delay: calc(var(--i) * 0.45s + 0.3s);
+  }
+
+  .method-diagram.md-animate .md-arrow {
+    opacity: 0;
+    transition: opacity 0.1s linear;
+    transition-delay: calc(var(--i) * 0.45s + 0.3s);
+  }
+
+  .method-diagram.md-animate.is-revealed .md-stage,
+  .method-diagram.md-animate.is-revealed .md-arrow {
+    opacity: 1;
+    transform: none;
+  }
+
+  .method-diagram.md-animate.is-revealed .md-arrow path {
+    stroke-dashoffset: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .method-diagram.md-animate .md-stage,
+    .method-diagram.md-animate .md-arrow {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .method-diagram.md-animate .md-arrow path {
+      stroke-dashoffset: 0;
+      transition: none;
+    }
+  }
+}

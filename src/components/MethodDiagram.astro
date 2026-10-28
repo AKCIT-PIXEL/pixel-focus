@@ -1,0 +1,147 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { t, toLang } from '../lib/i18n';
+import { cocExampleFrame, photoFile, type RefocusMeta } from '../lib/refocus';
+
+const s = t(toLang(Astro.currentLocale));
+
+// Modelo do quadro BokehNet do diagrama.
+const DIAGRAM_MODEL = 'official';
+
+// Foto do diagrama: a primeira de static/refocus/index.json, lido no build (que roda na
+// raiz do projeto). Sem o arquivo ou sem fotos, o build falha.
+function firstRefocusPhoto(): string {
+  const index = JSON.parse(readFileSync(join(process.cwd(), 'static/refocus/index.json'), 'utf8'));
+  const name = index.photos?.[0]?.name;
+  if (!name) throw new Error('static/refocus/index.json has no photos');
+  return name;
+}
+
+// Diagrama do método, gerado no build: uma versão horizontal (desktop) e uma vertical
+// (telas estreitas), trocadas por CSS. No cliente fica só a animação ao entrar na tela.
+// Arquivos e quadro BokehNet saem do meta.json da foto, como no cliente.
+const photo = { name: firstRefocusPhoto() };
+const meta: RefocusMeta = JSON.parse(readFileSync(join(process.cwd(), 'static/refocus', photo.name, 'meta.json'), 'utf8'));
+const DIAGRAM_STAGES = [
+  { label: s.diagram.input, sub: s.diagram.inputSub, src: photoFile(photo, meta, 'input') },
+  { label: 'DeblurNet', sub: s.diagram.deblurSub, src: photoFile(photo, meta, 'aif') },
+  { label: 'DepthPro', sub: s.diagram.depthSub, src: photoFile(photo, meta, 'depth_vis') },
+  { label: s.diagram.coc, sub: s.diagram.cocSub, src: photoFile(photo, meta, 'coc_example'), formula: true },
+  { label: 'BokehNet', sub: s.diagram.bokehSub, src: cocExampleFrame(photo, meta, DIAGRAM_MODEL) },
+];
+
+function layout(vertical: boolean) {
+  const box = vertical ? { w: 300, h: 262, thumbH: 192, gap: 40 } : { w: 168, h: 168, thumbH: 100, gap: 30 };
+  const pad = 8;
+  const n = DIAGRAM_STAGES.length;
+  const width = vertical ? box.w : n * box.w + (n - 1) * box.gap;
+  // Na horizontal a fórmula do CoC fica abaixo da caixa (não cabe na largura dela).
+  const height = vertical ? n * box.h + (n - 1) * box.gap : box.h + 26;
+  const prefix = vertical ? 'mdv' : 'mdh';
+  const stages = DIAGRAM_STAGES.map((stage, i) => {
+    const x = vertical ? 0 : i * (box.w + box.gap);
+    const y = vertical ? i * (box.h + box.gap) : 0;
+    const labelY = y + pad + box.thumbH + (vertical ? 30 : 24);
+    const arrow = i < n - 1
+      ? vertical
+        ? `M${box.w / 2},${y + box.h + 4} L${box.w / 2},${y + box.h + box.gap - 6}`
+        : `M${x + box.w + 4},${box.h / 2} L${x + box.w + box.gap - 6},${box.h / 2}`
+      : null;
+    return {
+      ...stage,
+      i,
+      x,
+      y,
+      thumbX: x + pad,
+      thumbY: y + pad,
+      thumbW: box.w - 2 * pad,
+      clipId: `${prefix}-clip-${i}`,
+      labelY,
+      subY: stage.formula && !vertical ? box.h + 20 : labelY + (vertical ? 24 : 20),
+      arrow,
+    };
+  });
+  return { vertical, box, width, height, prefix, stages };
+}
+
+const variants = [layout(false), layout(true)];
+---
+
+<figure class="method-diagram mb-6" id="method-diagram" role="img" aria-label={s.diagram.label}>
+  {
+    variants.map((v) => (
+      <svg
+        class={v.vertical ? 'md-vertical sm:hidden' : 'md-horizontal hidden sm:block'}
+        viewBox={`0 0 ${v.width} ${v.height}`}
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <marker id={`${v.prefix}-head`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#7a7a7a" />
+          </marker>
+          {v.stages.map((s) => (
+            <clipPath id={s.clipId}>
+              <rect x={s.thumbX} y={s.thumbY} width={s.thumbW} height={v.box.thumbH} rx="6" />
+            </clipPath>
+          ))}
+        </defs>
+        {v.stages.map((s) => (
+          <>
+            <g class="md-stage" style={`--i: ${s.i}`}>
+              <rect class="md-box" x={s.x} y={s.y} width={v.box.w} height={v.box.h} rx="12" />
+              <image
+                data-href={s.src}
+                x={s.thumbX}
+                y={s.thumbY}
+                width={s.thumbW}
+                height={v.box.thumbH}
+                preserveAspectRatio="xMidYMid slice"
+                clip-path={`url(#${s.clipId})`}
+              />
+              <text class="md-label" x={s.x + v.box.w / 2} y={s.labelY}>{s.label}</text>
+              <text class={s.formula ? 'md-sub md-formula' : 'md-sub'} x={s.x + v.box.w / 2} y={s.subY}>{s.sub}</text>
+            </g>
+            {s.arrow && (
+              <g class="md-arrow" style={`--i: ${s.i}`}>
+                <path d={s.arrow} pathLength="1" marker-end={`url(#${v.prefix}-head)`} />
+              </g>
+            )}
+          </>
+        ))}
+      </svg>
+    ))
+  }
+</figure>
+
+<script>
+  // As miniaturas só carregam perto da tela; a classe is-revealed dispara as
+  // transições em sequência (atraso por etapa no CSS).
+  function initMethodDiagram(figure: HTMLElement | null): void {
+    if (!figure) return;
+    const images = [...figure.querySelectorAll<SVGImageElement>('image[data-href]')];
+    const loadImages = (): void => images.forEach((img) => img.setAttribute('href', img.dataset.href!));
+    if (!('IntersectionObserver' in window)) {
+      loadImages();
+      return;
+    }
+    figure.classList.add('md-animate');
+    const loader = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        loadImages();
+        loader.disconnect();
+      }
+    }, { rootMargin: '600px 0px' });
+    loader.observe(figure);
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        figure.classList.add('is-revealed');
+        observer.disconnect();
+      }
+    }, { threshold: 0.35 });
+    observer.observe(figure);
+  }
+
+  initMethodDiagram(document.getElementById('method-diagram'));
+</script>

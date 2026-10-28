@@ -1,0 +1,118 @@
+---
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+---
+
+<!-- 5. Comparação de modelos BokehNet -->
+<section class="wrap py-8" id="models">
+  <h2 class="section-title">{s.models.title}</h2>
+  <div class="section-lead sm:text-justify sm:hyphens-auto">
+    <p set:html={s.models.lead} />
+    <p class="text-xs text-muted" set:html={s.models.note} />
+  </div>
+  <div id="model-compare">
+    <p class="text-center text-muted">{s.common.loading}</p>
+  </div>
+</section>
+
+<script>
+  import { el } from '../lib/dom';
+  import { createBeforeAfter, createCaseButtons, showNoData } from '../lib/widgets';
+  import { COMPARE_ROOT, loadCompareData, type CompareData, type ModelSweep } from '../lib/compare';
+  import { datasetLabel, formatNumber, modelLabel, withKgt } from '../lib/labels';
+  import { t, langFromDocument } from '../lib/i18n';
+
+  const s = t(langFromDocument());
+
+  // Rótulo de um K como múltiplo do K de referência (K_gt) do próprio protocolo.
+  function kLabel(info: ModelSweep, index: number) {
+    const k = info.k_grid[index];
+    const ratio = k / info.k_gt;
+    const best = index === info.best_k_index ? s.models.bestK : '';
+    return withKgt(`K = ${formatNumber(k)} (${formatNumber(ratio)} × `, `)${best}`);
+  }
+
+  function createSweepCard(model: string) {
+    const img = el('img', { alt: s.models.outputAlt(model), loading: 'lazy', decoding: 'async' });
+    const label = el('div', { class: 'sweep-label', 'aria-live': 'polite' });
+    const input = el('input', { type: 'range', class: 'range', min: '0', step: '1', 'aria-label': s.models.kAria(model) });
+    const root = el('div', { class: 'sweep-card' }, [
+      el('div', { class: 'sweep-title', text: modelLabel(model) }),
+      img, input, label,
+    ]);
+    let info: ModelSweep | null = null;
+    let base = '';
+
+    function show(index: number): void {
+      if (!info) return;
+      img.src = base + info.frames[index];
+      label.replaceChildren(...kLabel(info, index));
+      input.setAttribute('aria-valuetext', label.textContent || '');
+    }
+    input.addEventListener('input', () => show(Number(input.value)));
+
+    function update(newBase: string, newInfo: ModelSweep): void {
+      base = newBase;
+      info = newInfo;
+      input.max = String(info.frames.length - 1);
+      input.value = String(info.best_k_index);
+      show(info.best_k_index);
+    }
+    return { root, update };
+  }
+
+  function initModelCompare(container: HTMLElement, { models, metas }: CompareData): void {
+    let sceneIndex = 0;
+    let model = models[0];
+
+    const slider = createBeforeAfter({ before: '', after: '', alt: s.models.sliderAlt });
+    const caption = el('p', { class: 'figure-caption' });
+    const sweeps = models.map((m) => createSweepCard(m));
+
+    function render(): void {
+      const meta = metas[sceneIndex];
+      const base = `${COMPARE_ROOT}${meta.id}/`;
+      const info = meta.models[model];
+      slider.update({
+        before: base + meta.target,
+        after: base + info.best,
+        beforeLabel: s.models.target,
+        afterLabel: s.models.afterBest(modelLabel(model)),
+      });
+      const edge = info.best_k_at_boundary ? s.models.gridEdge : '';
+      caption.replaceChildren(...withKgt(
+        s.models.caption(datasetLabel(meta.dataset), meta.sample_id, modelLabel(model), formatNumber(info.best_k), edge),
+        ` = ${formatNumber(info.k_gt)}.`,
+      ));
+      sweeps.forEach((card, i) => card.update(base, meta.models[models[i]]));
+    }
+
+    const sceneButtons = createCaseButtons(metas.map((m, i) => s.models.sceneN(i + 1, datasetLabel(m.dataset))), (i) => {
+      sceneIndex = i;
+      render();
+    });
+    const modelButtons = createCaseButtons(models.map(modelLabel), (i) => {
+      model = models[i];
+      render();
+    });
+
+    container.replaceChildren(
+      sceneButtons.root,
+      el('p', { class: 'mb-2 text-center text-xs text-muted', text: s.models.pickerHint }),
+      modelButtons.root,
+      slider.root,
+      caption,
+      el('h3', { class: 'mt-8 mb-3 text-center text-lg', text: s.models.sweepTitle }),
+      el('div', { class: 'grid gap-4 lg:grid-cols-3' }, sweeps.map((s) => s.root)),
+    );
+  }
+
+  const container = document.getElementById('model-compare');
+  if (container) {
+    loadCompareData().then(
+      (data) => initModelCompare(container, data),
+      (err) => showNoData(container, err),
+    );
+  }
+</script>

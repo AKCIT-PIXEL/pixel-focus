@@ -1,0 +1,99 @@
+---
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+---
+
+<!-- 4. Galeria antes/depois -->
+<section class="wrap py-8" id="gallery">
+  <h2 class="section-title">{s.gallery.title}</h2>
+  <div class="section-lead text-center">
+    <p>{s.gallery.lead}</p>
+  </div>
+
+  <h3 class="mb-3 text-center text-xl sm:text-2xl">{s.gallery.deblurTitle}</h3>
+  <div id="deblur-gallery">
+    <p class="text-center text-muted">{s.common.loading}</p>
+  </div>
+
+  <h3 class="mt-12 mb-3 text-center text-xl sm:text-2xl">{s.gallery.bokehTitle}</h3>
+  <div id="bokeh-gallery">
+    <p class="text-center text-muted">{s.common.loading}</p>
+  </div>
+</section>
+
+<script>
+  import { el } from '../lib/dom';
+  import { fetchJSON } from '../lib/data';
+  import { createBeforeAfter, createCaseButtons, showNoData } from '../lib/widgets';
+  import { asset } from '../lib/asset';
+  import { COMPARE_ROOT, loadCompareData, type CompareData } from '../lib/compare';
+  import { datasetLabel, formatNumber } from '../lib/labels';
+  import { t, langFromDocument } from '../lib/i18n';
+
+  const s = t(langFromDocument());
+
+  // Checkpoint em destaque na galeria de bokeh (seção 4).
+  const FEATURED_MODEL = 'v2-fase2';
+
+  interface DeblurScene {
+    scene_id: string;
+    distance: string;
+    aperture: string;
+    blur: string;
+    deblur: string;
+  }
+
+  async function initDeblurGallery(container: HTMLElement): Promise<void> {
+    const root = asset('deblur/');
+    const index = await fetchJSON<{ source: string; scenes?: DeblurScene[] }>(`${root}index.json`);
+    const scenes = index.scenes || [];
+    if (!scenes.length) throw new Error('deblur/index.json has no scenes');
+    const slider = createBeforeAfter({ before: '', after: '', alt: s.gallery.deblurAlt });
+    const caption = el('p', { class: 'figure-caption' });
+    const buttons = createCaseButtons(scenes.map((_, i) => s.common.caseN(i + 1)), (i) => {
+      const scene = scenes[i];
+      slider.update({
+        before: root + scene.blur,
+        after: root + scene.deblur,
+        beforeLabel: s.gallery.blurInput(scene.aperture.replace('F', '')),
+        afterLabel: 'DeblurNet',
+      });
+      caption.textContent = s.gallery.deblurCaption(scene.scene_id, formatNumber(scene.distance), index.source);
+    });
+    container.replaceChildren(buttons.root, slider.root, caption);
+  }
+
+  function initBokehGallery(container: HTMLElement, { models, metas }: CompareData): void {
+    // Prefere o checkpoint mais recente; a comparação entre modelos fica na seção 5.
+    // Só entram cenas que têm o modelo escolhido.
+    const model = [FEATURED_MODEL, ...models].find((m) => metas.some((meta) => meta.models[m]));
+    const scenes = model ? metas.filter((meta) => meta.models[model]) : [];
+    if (!model || !scenes.length) throw new Error('compare data has no scene with a model');
+    const slider = createBeforeAfter({ before: '', after: '', alt: s.gallery.bokehAlt });
+    const caption = el('p', { class: 'figure-caption' });
+    const buttons = createCaseButtons(scenes.map((_, i) => s.common.caseN(i + 1)), (i) => {
+      const meta = scenes[i];
+      const info = meta.models[model];
+      const base = `${COMPARE_ROOT}${meta.id}/`;
+      slider.update({
+        before: base + meta.aif,
+        after: base + info.best,
+        beforeLabel: s.gallery.sharpInput,
+        afterLabel: `BokehNet ${model}`,
+      });
+      caption.textContent = `${datasetLabel(meta.dataset)} · ${meta.sample_id} · K = ${formatNumber(info.best_k)}.`;
+    });
+    container.replaceChildren(buttons.root, slider.root, caption);
+  }
+
+  const deblur = document.getElementById('deblur-gallery');
+  if (deblur) initDeblurGallery(deblur).catch((err) => showNoData(deblur, err));
+
+  const bokeh = document.getElementById('bokeh-gallery');
+  if (bokeh) {
+    loadCompareData()
+      .then((data) => initBokehGallery(bokeh, data))
+      .catch((err) => showNoData(bokeh, err));
+  }
+</script>

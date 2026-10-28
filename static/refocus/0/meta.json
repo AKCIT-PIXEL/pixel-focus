@@ -1,0 +1,126 @@
+{
+  "name": "0",
+  "source": "0.jpg",
+  "source_sha256": "637baeb3d78348d8916623f9a02a7b5e2d6878400ba8475e455984c2ff4b1771",
+  "size": [
+    1024,
+    672
+  ],
+  "deblur": {
+    "skipped": false,
+    "repo": "nycu-cplab/Genfocus-Model",
+    "filename": "deblurNet.safetensors",
+    "seed": 42
+  },
+  "depth": {
+    "model": "DepthPro",
+    "repo": "nycu-cplab/Genfocus-Model",
+    "filename": "checkpoints/depth_pro.pt"
+  },
+  "disp_range": [
+    0.09930328279733658,
+    0.5000032186508179
+  ],
+  "planes": [
+    {
+      "disp_focus": 0.10195153206586838,
+      "quantile": 0.04,
+      "disp_norm": 0.006609058379036402,
+      "index": 0
+    },
+    {
+      "disp_focus": 0.23362672328948975,
+      "quantile": 0.3745,
+      "disp_norm": 0.33522201645989147,
+      "index": 1
+    },
+    {
+      "disp_focus": 0.275378555059433,
+      "quantile": 0.4582,
+      "disp_norm": 0.43941926740532233,
+      "index": 2
+    },
+    {
+      "disp_focus": 0.32397735118865967,
+      "quantile": 0.5418,
+      "disp_norm": 0.5607040288458561,
+      "index": 3
+    },
+    {
+      "disp_focus": 0.33627212047576904,
+      "quantile": 0.6255,
+      "disp_norm": 0.5913872613273433,
+      "index": 4
+    },
+    {
+      "disp_focus": 0.3922103941440582,
+      "quantile": 0.7091,
+      "disp_norm": 0.7309886654282499,
+      "index": 5
+    },
+    {
+      "disp_focus": 0.409894734621048,
+      "quantile": 0.7927,
+      "disp_norm": 0.7751222898555225,
+      "index": 6
+    },
+    {
+      "disp_focus": 0.4209597706794739,
+      "quantile": 0.8764,
+      "disp_norm": 0.8027365594581808,
+      "index": 7
+    },
+    {
+      "disp_focus": 0.4755813479423523,
+      "quantile": 0.96,
+      "disp_norm": 0.9390519725029465,
+      "index": 8
+    }
+  ],
+  "ks": [
+    5,
+    10,
+    20,
+    30,
+    40,
+    50
+  ],
+  "k0": "aif.webp",
+  "frame_pattern": "{model}/f{plane:02d}_k{k_index}.webp",
+  "models": [
+    {
+      "name": "official",
+      "repo": "nycu-cplab/Genfocus-Model",
+      "filename": "bokehNet.safetensors",
+      "step": null,
+      "complete": true
+    },
+    {
+      "name": "synth-2gpu",
+      "repo": "juliadollis/genrefocus-bokehnet-synth-2gpu",
+      "filename": "bokeh.safetensors",
+      "step": null,
+      "complete": true
+    },
+    {
+      "name": "v2-fase2",
+      "repo": "juliadollis/genrefocus-bokehnet-v2-fase2",
+      "filename": "bokeh_step60000.safetensors",
+      "step": 60000,
+      "complete": true
+    }
+  ],
+  "steps": 28,
+  "seed": 1234,
+  "coc_example": {
+    "plane": 4,
+    "k": 30
+  },
+  "files": {
+    "input": "input.webp",
+    "aif": "aif.webp",
+    "disp": "disp.png",
+    "depth_vis": "depth_vis.webp",
+    "coc_example": "coc_example.webp"
+  }
+}

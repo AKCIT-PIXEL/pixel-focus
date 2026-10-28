@@ -1,0 +1,85 @@
+{
+  "source": "AKCITPixel3/DFD-IF-deblur",
+  "scenes": [
+    {
+      "id": "1036e2cc-d0-80",
+      "scene_id": "1036e2cc",
+      "distance": "0.80",
+      "aperture": "F1.4",
+      "shard": "train-00000-of-00025.parquet",
+      "blur": "1036e2cc-d0-80/blur.webp",
+      "deblur": "1036e2cc-d0-80/deblur.webp",
+      "focus": "1036e2cc-d0-80/focus.webp"
+    },
+    {
+      "id": "139a9b31-d0-80",
+      "scene_id": "139a9b31",
+      "distance": "0.80",
+      "aperture": "F1.4",
+      "shard": "train-00001-of-00025.parquet",
+      "blur": "139a9b31-d0-80/blur.webp",
+      "deblur": "139a9b31-d0-80/deblur.webp",
+      "focus": "139a9b31-d0-80/focus.webp"
+    },
+    {
+      "id": "14f444a4-d0-80",
+      "scene_id": "14f444a4",
+      "distance": "0.80",
+      "aperture": "F1.4",
+      "shard": "train-00002-of-00025.parquet",
+      "blur": "14f444a4-d0-80/blur.webp",
+      "deblur": "14f444a4-d0-80/deblur.webp",
+      "focus": "14f444a4-d0-80/focus.webp"
+    },
+    {
+      "id": "192ecd02-d0-80",
+      "scene_id": "192ecd02",
+      "distance": "0.80",
+      "aperture": "F1.4",
+      "shard": "train-00003-of-00025.parquet",
+      "blur": "192ecd02-d0-80/blur.webp",
+      "deblur": "192ecd02-d0-80/deblur.webp",
+      "focus": "192ecd02-d0-80/focus.webp"
+    },
+    {
+      "id": "208c1f27-d0-80",
+      "scene_id": "208c1f27",
+      "distance": "0.80",
+      "aperture": "F1.4",
+      "shard": "train-00004-of-00025.parquet",
+      "blur": "208c1f27-d0-80/blur.webp",
+      "deblur": "208c1f27-d0-80/deblur.webp",
+      "focus": "208c1f27-d0-80/focus.webp"
+    },
+    {
+      "id": "235b8e4a-d0-80",
+      "scene_id": "235b8e4a",
+      "distance": "0.80",
+      "aperture": "F1.4",
+      "shard": "train-00005-of-00025.parquet",
+      "blur": "235b8e4a-d0-80/blur.webp",
+      "deblur": "235b8e4a-d0-80/deblur.webp",
+      "focus": "235b8e4a-d0-80/focus.webp"
+    }
+  ],
+  "files": [
+    "1036e2cc-d0-80/blur.webp",
+    "1036e2cc-d0-80/deblur.webp",
+    "1036e2cc-d0-80/focus.webp",
+    "139a9b31-d0-80/blur.webp",
+    "139a9b31-d0-80/deblur.webp",
+    "139a9b31-d0-80/focus.webp",
+    "14f444a4-d0-80/blur.webp",
+    "14f444a4-d0-80/deblur.webp",
+    "14f444a4-d0-80/focus.webp",
+    "192ecd02-d0-80/blur.webp",
+    "192ecd02-d0-80/deblur.webp",
+    "192ecd02-d0-80/focus.webp",
+    "208c1f27-d0-80/blur.webp",
+    "208c1f27-d0-80/deblur.webp",
+    "208c1f27-d0-80/focus.webp",
+    "235b8e4a-d0-80/blur.webp",
+    "235b8e4a-d0-80/deblur.webp",
+    "235b8e4a-d0-80/focus.webp"
+  ]
+}

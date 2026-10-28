@@ -1,0 +1,14 @@
+---
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+---
+
+<!-- 6. Teste de OCR -->
+<section class="wrap py-8" id="ocr">
+  <h2 class="section-title">{s.ocr.title}</h2>
+  <div class="placeholder-box">
+    <span class="tag-soon">{s.common.soon}</span>
+    <p>{s.ocr.body}</p>
+  </div>
+</section>

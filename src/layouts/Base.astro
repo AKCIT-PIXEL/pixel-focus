@@ -1,0 +1,60 @@
+---
+import '../styles/global.css';
+import { asset } from '../lib/asset';
+import { t, LOCALES, type Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+}
+
+const { lang, title, description } = Astro.props;
+const s = t(lang);
+
+// OG/Twitter exigem URL absoluta: só sai absoluta quando SITE_URL estiver definido no build.
+const absolute = (path: string): string => (Astro.site ? new URL(path, Astro.site).href : path);
+// Inglês na raiz e português em /pt/; cada idioma tem a própria imagem OG.
+const locale = LOCALES[lang];
+const langUrls = { en: absolute(asset(LOCALES.en.path)), pt: absolute(asset(LOCALES.pt.path)) };
+const pageUrl = langUrls[lang];
+const ogImage = absolute(asset(locale.ogImage));
+---
+
+<!doctype html>
+<html lang={locale.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>{title}</title>
+    <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
+    <!-- Pôster do vídeo do topo é o maior elemento da primeira tela -->
+    <link rel="preload" as="image" href={asset('teaser/poster.webp')} type="image/webp" fetchpriority="high" />
+    {Astro.site && <link rel="canonical" href={pageUrl} />}
+    <!-- hreflang exige URL absoluta, como o canonical: só com SITE_URL -->
+    {Astro.site && <link rel="alternate" hreflang={LOCALES.en.htmlLang} href={langUrls.en} />}
+    {Astro.site && <link rel="alternate" hreflang={LOCALES.pt.htmlLang} href={langUrls.pt} />}
+    {Astro.site && <link rel="alternate" hreflang="x-default" href={langUrls.en} />}
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={locale.ogLocale} />
+    <meta property="og:site_name" content="AKCIT-PIXEL" />
+    <meta property="og:title" content={s.meta.ogTitle} />
+    <meta property="og:description" content={s.meta.ogDescription} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={s.meta.ogImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={s.meta.ogTitle} />
+    <meta name="twitter:description" content={s.meta.twitterDescription} />
+    <meta name="twitter:image" content={ogImage} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

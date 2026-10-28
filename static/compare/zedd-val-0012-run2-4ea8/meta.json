@@ -1,0 +1,140 @@
+{
+  "id": "zedd-val-0012-run2-4ea8",
+  "dataset": "zedd",
+  "sample_id": "val_0012_run2_4EA8",
+  "models": {
+    "official": {
+      "best": "official/best.webp",
+      "best_size": [
+        1024,
+        672
+      ],
+      "best_k": 27.6525,
+      "best_k_index": 1,
+      "best_k_at_boundary": false,
+      "k_gt": 55.305,
+      "k_grid": [
+        13.8263,
+        27.6525,
+        41.4788,
+        55.305,
+        69.1313,
+        82.9576,
+        110.6101,
+        165.9151
+      ],
+      "frames": [
+        "official/k0.webp",
+        "official/k1.webp",
+        "official/k2.webp",
+        "official/k3.webp",
+        "official/k4.webp",
+        "official/k5.webp",
+        "official/k6.webp",
+        "official/k7.webp"
+      ]
+    },
+    "synth-2gpu": {
+      "best": "synth-2gpu/best.webp",
+      "best_size": [
+        1024,
+        672
+      ],
+      "best_k": 27.6525,
+      "best_k_index": 1,
+      "best_k_at_boundary": false,
+      "k_gt": 55.305,
+      "k_grid": [
+        13.8263,
+        27.6525,
+        41.4788,
+        55.305,
+        69.1313,
+        82.9576,
+        110.6101,
+        165.9151
+      ],
+      "frames": [
+        "synth-2gpu/k0.webp",
+        "synth-2gpu/k1.webp",
+        "synth-2gpu/k2.webp",
+        "synth-2gpu/k3.webp",
+        "synth-2gpu/k4.webp",
+        "synth-2gpu/k5.webp",
+        "synth-2gpu/k6.webp",
+        "synth-2gpu/k7.webp"
+      ]
+    },
+    "v2-fase2": {
+      "best": "v2-fase2/best.webp",
+      "best_size": [
+        1024,
+        672
+      ],
+      "best_k": 69.1313,
+      "best_k_index": 8,
+      "best_k_at_boundary": true,
+      "k_gt": 27.6525,
+      "k_grid": [
+        9.6784,
+        13.8263,
+        19.3568,
+        23.5046,
+        27.6525,
+        33.183,
+        41.4788,
+        55.305,
+        69.1313
+      ],
+      "frames": [
+        "v2-fase2/k0.webp",
+        "v2-fase2/k1.webp",
+        "v2-fase2/k2.webp",
+        "v2-fase2/k3.webp",
+        "v2-fase2/k4.webp",
+        "v2-fase2/k5.webp",
+        "v2-fase2/k6.webp",
+        "v2-fase2/k7.webp",
+        "v2-fase2/k8.webp"
+      ]
+    }
+  },
+  "files": [
+    "official/best.webp",
+    "official/k0.webp",
+    "official/k1.webp",
+    "official/k2.webp",
+    "official/k3.webp",
+    "official/k4.webp",
+    "official/k5.webp",
+    "official/k6.webp",
+    "official/k7.webp",
+    "synth-2gpu/best.webp",
+    "synth-2gpu/k0.webp",
+    "synth-2gpu/k1.webp",
+    "synth-2gpu/k2.webp",
+    "synth-2gpu/k3.webp",
+    "synth-2gpu/k4.webp",
+    "synth-2gpu/k5.webp",
+    "synth-2gpu/k6.webp",
+    "synth-2gpu/k7.webp",
+    "target.webp",
+    "aif.webp",
+    "v2-fase2/best.webp",
+    "v2-fase2/k0.webp",
+    "v2-fase2/k1.webp",
+    "v2-fase2/k2.webp",
+    "v2-fase2/k3.webp",
+    "v2-fase2/k4.webp",
+    "v2-fase2/k5.webp",
+    "v2-fase2/k6.webp",
+    "v2-fase2/k7.webp",
+    "v2-fase2/k8.webp"
+  ],
+  "size": [
+    1024,
+    672
+  ],
+  "target": "target.webp",
+  "aif": "aif.webp"
+}

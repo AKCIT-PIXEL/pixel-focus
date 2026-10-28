@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import SectionNav from './SectionNav.astro';
+import Hero from './Hero.astro';
+import Pipeline from './Pipeline.astro';
+import Refocus from './Refocus.astro';
+import Gallery from './Gallery.astro';
+import ModelCompare from './ModelCompare.astro';
+import OcrPlaceholder from './OcrPlaceholder.astro';
+import Credits from './Credits.astro';
+import { t, type Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const s = t(lang);
+---
+
+<Base lang={lang} title={s.meta.title} description={s.meta.description}>
+  <SectionNav />
+  <main>
+    <Hero />
+    <Pipeline />
+    <Refocus />
+    <Gallery />
+    <ModelCompare />
+    <OcrPlaceholder />
+    <Credits />
+  </main>
+  <footer class="mt-8 bg-paper px-4 py-10 text-center text-xs">
+    <p set:html={s.footer} />
+  </footer>
+</Base>

@@ -1,0 +1,174 @@
+---
+import { asset } from '../lib/asset';
+import { t, toLang, LOCALES } from '../lib/i18n';
+
+const lang = toLang(Astro.currentLocale);
+const s = t(lang);
+const links = (['pipeline', 'refocus', 'gallery', 'models', 'ocr', 'credits'] as const).map((id) => ({ id, label: s.nav.links[id] }));
+// Seletor de idioma: os dois sempre visíveis; o outro idioma aponta para a mesma página nele.
+const langs = (['en', 'pt'] as const).map((code) => ({
+  code,
+  htmlLang: LOCALES[code].htmlLang,
+  href: asset(LOCALES[code].path),
+}));
+---
+
+<!-- Navegação fixa entre as seções -->
+<nav class="section-nav sticky top-0 z-30 border-b border-[#ededed] bg-white/92 backdrop-blur-md" aria-label={s.nav.label}>
+  <div class="mx-auto flex h-(--nav-h) max-w-[960px] items-center gap-4 px-2 sm:px-4">
+    <a class="hidden whitespace-nowrap font-display font-semibold text-ink no-underline hover:no-underline md:block" href="#top">Pixel Focus</a>
+    <div class="section-nav-links flex min-w-0 flex-1 gap-1 overflow-x-auto md:ml-auto md:flex-none">
+      {
+        links.map((link) => (
+          <a
+            href={`#${link.id}`}
+            class="flex flex-none items-center whitespace-nowrap rounded-full px-3 py-1 text-[0.85rem] text-ink-soft no-underline transition-colors hover:bg-[#f2f2f2] hover:text-ink hover:no-underline pointer-coarse:min-h-11 [&.is-active]:bg-ink [&.is-active]:text-white"
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+    <div
+      class="lang-toggle relative grid flex-none grid-cols-2 rounded-full border border-[#dcdcdc] p-0.5 text-[0.8rem] font-semibold"
+      role="group"
+      aria-label={s.nav.langLabel}
+      data-active={lang}
+      data-current={lang}
+    >
+      <span class="lang-thumb pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc(50%-0.125rem)] rounded-full bg-ink" aria-hidden="true"></span>
+      {
+        langs.map((item) =>
+          item.code === lang ? (
+            <span class="lang-item relative flex items-center justify-center rounded-full px-2.5 py-0.5 pointer-coarse:min-h-11" data-lang={item.code} lang={item.htmlLang} aria-current="true">
+              {item.code.toUpperCase()}
+            </span>
+          ) : (
+            <a
+              class="lang-item relative flex items-center justify-center rounded-full px-2.5 py-0.5 no-underline transition-colors hover:text-ink hover:no-underline pointer-coarse:min-h-11"
+              href={item.href}
+              hreflang={item.htmlLang}
+              lang={item.htmlLang}
+              data-lang={item.code}
+              aria-label={`${s.nav.switchLabel} (${item.code.toUpperCase()})`}
+            >
+              {item.code.toUpperCase()}
+            </a>
+          ),
+        )
+      }
+    </div>
+  </div>
+</nav>
+
+<style>
+  .section-nav-links {
+    scrollbar-width: none;
+  }
+
+  .section-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Seletor de idioma: o "thumb" escuro fica sob o idioma de data-active e desliza ao trocar. */
+  .lang-thumb {
+    transition: transform 200ms ease;
+  }
+
+  .lang-toggle[data-active='pt'] .lang-thumb {
+    transform: translateX(100%);
+  }
+
+  .lang-item {
+    color: var(--color-ink-soft);
+    transition: color 200ms ease;
+  }
+
+  .lang-toggle[data-active='en'] .lang-item[data-lang='en'],
+  .lang-toggle[data-active='pt'] .lang-item[data-lang='pt'] {
+    color: #fff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lang-thumb,
+    .lang-item {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Destaca a seção que cruza o meio da tela.
+  function initSectionNav(nav: HTMLElement | null): void {
+    if (!nav || !('IntersectionObserver' in window)) return;
+    const scroller = nav.querySelector<HTMLElement>('.section-nav-links');
+    if (!scroller) return;
+    const links = [...scroller.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')];
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const byId = new Map(links.map((a) => [a.getAttribute('href')!.slice(1), a]));
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const link = byId.get(entry.target.id);
+        if (!link) return;
+        link.classList.toggle('is-active', entry.isIntersecting);
+        if (entry.isIntersecting) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+        // No celular, rola a faixa de links (só na horizontal) até o link ativo.
+        if (entry.isIntersecting && scroller.scrollWidth > scroller.clientWidth) {
+          scroller.scrollTo({ left: link.offsetLeft - 16, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+        }
+      });
+    }, { rootMargin: '-50% 0px -50% 0px' });
+
+    // Imagens com loading="lazy" carregam durante a rolagem suave e empurram o
+    // conteúdo; ao fim da rolagem, reajusta se a seção não parou no topo.
+    links.forEach((link) => link.addEventListener('click', () => {
+      const target = document.getElementById(link.getAttribute('href')!.slice(1));
+      if (!target) return;
+      const settle = (): void => {
+        const offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+        if (Math.abs(target.getBoundingClientRect().top - offset) > 4) target.scrollIntoView();
+      };
+      window.addEventListener('scrollend', settle, { once: true });
+    }));
+    byId.forEach((_, id) => {
+      const section = document.getElementById(id);
+      if (section) observer.observe(section);
+    });
+  }
+
+  // O link de idioma leva a seção atual (#hash) junto, para o visitante continuar no mesmo ponto.
+  // No clique, o thumb desliza até o outro idioma e só então a página navega.
+  function initLangToggle(toggle: HTMLElement | null): void {
+    const link = toggle?.querySelector<HTMLAnchorElement>('a.lang-item');
+    if (!toggle || !link) return;
+    const path = link.getAttribute('href')!;
+    const sync = (): void => link.setAttribute('href', path + location.hash);
+    sync();
+    window.addEventListener('hashchange', sync);
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    link.addEventListener('click', (event) => {
+      sync();
+      // Nova aba (modificador ou botão do meio) ou movimento reduzido: navegação normal, sem animação.
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || reducedMotion.matches) return;
+      event.preventDefault();
+      toggle.dataset.active = link.dataset.lang;
+      const thumb = toggle.querySelector<HTMLElement>('.lang-thumb');
+      let done = false;
+      const go = (): void => {
+        if (done) return;
+        done = true;
+        location.href = link.href;
+      };
+      thumb?.addEventListener('transitionend', go, { once: true });
+      setTimeout(go, 250); // garantia caso o transitionend não dispare
+    });
+    // Voltar pelo histórico (bfcache) restaura a página com o thumb deslocado: devolve ao idioma atual.
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) toggle.dataset.active = toggle.dataset.current;
+    });
+  }
+
+  initSectionNav(document.querySelector<HTMLElement>('.section-nav'));
+  initLangToggle(document.querySelector<HTMLElement>('.lang-toggle'));
+</script>

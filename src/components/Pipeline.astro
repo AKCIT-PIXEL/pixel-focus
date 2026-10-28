@@ -1,0 +1,124 @@
+---
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+---
+
+<!-- 2. Pipeline animado -->
+<section class="wrap py-8" id="pipeline">
+  <h2 class="section-title">{s.pipeline.title}</h2>
+  <div class="section-lead sm:text-justify sm:hyphens-auto">
+    <p set:html={s.pipeline.lead} />
+  </div>
+  <div id="pipeline-widget">
+    <div class="placeholder-box">
+      <span class="tag-soon">{s.common.soon}</span>
+      <p>{s.pipeline.placeholder}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { el } from '../lib/dom';
+  import { createCaseButtons, createCrossfadeStage, showNoData } from '../lib/widgets';
+  import { aspectRatio, cocExample, cocExampleFrame, loadRefocusData, photoFile, type RefocusItem } from '../lib/refocus';
+  import { modelLabel } from '../lib/labels';
+  import { createParallax, type Parallax } from '../lib/parallax';
+  import { t, langFromDocument } from '../lib/i18n';
+
+  const s = t(langFromDocument());
+
+  // Etapas do pipeline, avançando sozinhas até o usuário clicar.
+  function initPipeline(container: HTMLElement, items: RefocusItem[]): void {
+    const stage = createCrossfadeStage('pipeline-stage', s.pipeline.stage);
+    const caption = el('p', { class: 'figure-caption', 'aria-live': 'polite' });
+    let item = items[0];
+    let step = 0;
+    let timer: number | null = null;
+    // Paralaxe da etapa DepthPro: criada só quando a seção chega perto da tela.
+    let parallax: Parallax | null = null;
+
+    function steps() {
+      const { photo, meta, models } = item;
+      const coc = cocExample(meta);
+      return [
+        { label: s.pipeline.inputLabel, src: photoFile(photo, meta, 'input'), text: s.pipeline.inputText },
+        { label: 'DeblurNet', src: photoFile(photo, meta, 'aif'), text: s.pipeline.deblurText },
+        {
+          label: 'DepthPro',
+          src: photoFile(photo, meta, 'depth_vis'),
+          text: parallax
+            ? s.pipeline.depthParallaxText
+            : s.pipeline.depthText,
+        },
+        { label: s.pipeline.cocLabel, src: photoFile(photo, meta, 'coc_example'), text: s.pipeline.cocText(coc.k) },
+        { label: 'BokehNet', src: cocExampleFrame(photo, meta, models[0]), text: s.pipeline.bokehText(modelLabel(models[0])) },
+      ];
+    }
+
+    // Botões das etapas (rótulos fixos), com setas entre eles. Clique do usuário para o avanço automático.
+    const stepButtons = createCaseButtons(steps().map((s) => s.label), (i) => {
+      const list = steps();
+      step = i;
+      stage.show(list[step].src);
+      caption.textContent = list[step].text;
+      syncParallax();
+    });
+    stepButtons.root.classList.add('pipeline-steps');
+    stepButtons.root.setAttribute('aria-label', s.pipeline.steps);
+    [...stepButtons.root.children].slice(1).forEach((button) => {
+      button.before(el('span', { class: 'step-arrow', text: '→', 'aria-hidden': 'true' }));
+    });
+    stepButtons.root.addEventListener('click', stopAuto);
+
+    // Na etapa DepthPro, o canvas da paralaxe cobre o mapa de profundidade.
+    function syncParallax(): void {
+      if (!parallax) return;
+      const { photo, meta } = item;
+      const plane = meta.planes[cocExample(meta).plane];
+      parallax.load(photoFile(photo, meta, 'aif'), photoFile(photo, meta, 'disp'), plane ? plane.disp_norm : 0.5);
+      parallax.setActive(steps()[step].label === 'DepthPro');
+    }
+
+    function go(i: number): void {
+      stepButtons.select((i + steps().length) % steps().length);
+    }
+
+    function stopAuto(): void {
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
+
+    const photoButtons = createCaseButtons(items.map((_, i) => s.common.photoN(i + 1)), (i) => {
+      item = items[i];
+      container.style.setProperty('--ar', aspectRatio(item));
+      go(step);
+    });
+    container.replaceChildren(photoButtons.root, stepButtons.root, stage.root, caption);
+    // Sem avanço automático para quem pede menos movimento; nem durante o arraste da paralaxe.
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      timer = window.setInterval(() => {
+        if (!parallax?.isDragging()) go(step + 1);
+      }, 2200);
+    }
+
+    // Contexto WebGL só perto da tela; fora dela a animação pausa. Sem WebGL, fica o mapa estático.
+    let tried = false;
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !tried) {
+        tried = true;
+        parallax = createParallax();
+        if (parallax) {
+          stage.root.append(parallax.canvas);
+          go(step); // atualiza a legenda e carrega as texturas
+        }
+      }
+      parallax?.setVisible(entry.isIntersecting);
+    }, { rootMargin: '200px 0px' }).observe(stage.root);
+  }
+
+  const container = document.getElementById('pipeline-widget');
+  if (container) {
+    loadRefocusData().then((items) => initPipeline(container, items), (err) => showNoData(container, err));
+  }
+</script>
