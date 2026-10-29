@@ -42,8 +42,8 @@ export interface BeforeAfter {
 // Slider antes/depois: a imagem "depois" fica por cima, recortada com
 // clip-path; arrastar (mouse ou toque) move o corte e a alça.
 export function createBeforeAfter({ before, after, beforeLabel, afterLabel, alt = '' }: BeforeAfterData & { alt?: string }): BeforeAfter {
-  const imgBefore = el('img', { class: 'ba-before', alt, draggable: 'false', decoding: 'async' });
-  const imgAfter = el('img', { class: 'ba-after', alt: '', draggable: 'false', decoding: 'async', 'aria-hidden': 'true' });
+  const imgBefore = el('img', { class: 'ba-before', alt, draggable: 'false', loading: 'lazy', decoding: 'async' });
+  const imgAfter = el('img', { class: 'ba-after', alt: '', draggable: 'false', loading: 'lazy', decoding: 'async', 'aria-hidden': 'true' });
   const labelLeft = el('span', { class: 'ba-label is-left' });
   const labelRight = el('span', { class: 'ba-label is-right' });
   const handle = el('div', { class: 'ba-handle' });
@@ -133,8 +133,8 @@ export function createCaseButtons(labels: string[], onSelect: (index: number) =>
 
 // Duas camadas de imagem; trocar o src faz crossfade da nova sobre a antiga.
 export function createCrossfadeStage(className: string, alt = '') {
-  const base = el('img', { alt, draggable: 'false', decoding: 'async' });
-  const top = el('img', { class: 'layer-top', alt: '', draggable: 'false', 'aria-hidden': 'true' });
+  const base = el('img', { alt, draggable: 'false', loading: 'lazy', decoding: 'async' });
+  const top = el('img', { class: 'layer-top', alt: '', draggable: 'false', loading: 'lazy', 'aria-hidden': 'true' });
   const root = el('div', { class: className }, [base, top]);
   let token = 0;
 

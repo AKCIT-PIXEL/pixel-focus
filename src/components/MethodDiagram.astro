@@ -3,11 +3,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { t, toLang } from '../lib/i18n';
 import { cocExampleFrame, photoFile, type RefocusMeta } from '../lib/refocus';
+import { sortModels } from '../lib/labels';
 
 const s = t(toLang(Astro.currentLocale));
-
-// Modelo do quadro BokehNet do diagrama.
-const DIAGRAM_MODEL = 'official';
 
 // Foto do diagrama: a primeira de static/refocus/index.json, lido no build (que roda na
 // raiz do projeto). Sem o arquivo ou sem fotos, o build falha.
@@ -23,6 +21,10 @@ function firstRefocusPhoto(): string {
 // Arquivos e quadro BokehNet saem do meta.json da foto, como no cliente.
 const photo = { name: firstRefocusPhoto() };
 const meta: RefocusMeta = JSON.parse(readFileSync(join(process.cwd(), 'static/refocus', photo.name, 'meta.json'), 'utf8'));
+// Modelo do quadro BokehNet: o primeiro da ordem de exibição (v2-fase2) com os quadros completos
+// nessa foto; se ele faltar, cai no próximo. Sem nenhum modelo completo, o build falha.
+const DIAGRAM_MODEL = sortModels(meta.models.filter((m) => m.complete).map((m) => m.name))[0];
+if (!DIAGRAM_MODEL) throw new Error(`static/refocus/${photo.name}/meta.json has no complete model`);
 const DIAGRAM_STAGES = [
   { label: s.diagram.input, sub: s.diagram.inputSub, src: photoFile(photo, meta, 'input') },
   { label: 'DeblurNet', sub: s.diagram.deblurSub, src: photoFile(photo, meta, 'aif') },

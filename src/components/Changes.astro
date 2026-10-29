@@ -1,0 +1,28 @@
+---
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+---
+
+<!-- Do GenFocus ao nosso modelo: o que replicamos e o que mudamos -->
+<section class="wrap py-8" id="changes">
+  <h2 class="section-title">{s.changes.title}</h2>
+  <div class="section-lead text-center">
+    <p>{s.changes.lead}</p>
+  </div>
+  <ol class="grid list-none gap-4 p-0 md:grid-cols-3">
+    {
+      s.changes.steps.map((step, i) => (
+        <li class="rounded-[10px] bg-paper p-4">
+          <div class="mb-2 flex items-center gap-2">
+            <span class="flex size-7 flex-none items-center justify-center rounded-full bg-ink text-sm font-semibold text-white" aria-hidden="true">
+              {i + 1}
+            </span>
+            <h3 class="text-lg">{step.title}</h3>
+          </div>
+          <p class="text-sm leading-relaxed" set:html={step.body} />
+        </li>
+      ))
+    }
+  </ol>
+</section>

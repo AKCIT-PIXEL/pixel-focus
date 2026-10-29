@@ -1,0 +1,23 @@
+---
+import { t, toLang } from '../lib/i18n';
+
+const s = t(toLang(Astro.currentLocale));
+---
+
+<!-- Teste com sua foto: interface pronta; o envio depende de PUBLIC_REFOCUS_API no build -->
+<section class="wrap py-8" id="upload">
+  <h2 class="section-title">{s.upload.title}</h2>
+  <div class="section-lead text-center">
+    <p>{s.upload.lead}</p>
+  </div>
+  <div id="upload-widget">
+    <p class="text-center text-muted">{s.common.loading}</p>
+  </div>
+</section>
+
+<script>
+  import { initUpload } from '../lib/upload';
+
+  const container = document.getElementById('upload-widget');
+  if (container) initUpload(container, import.meta.env.PUBLIC_REFOCUS_API || undefined);
+</script>

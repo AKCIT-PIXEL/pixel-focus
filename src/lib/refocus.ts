@@ -2,6 +2,7 @@
 // Lidos em tempo de execução: uma nova publicação dos renders pode trazer quadros novos depois do build.
 import { asset } from './asset';
 import { fetchJSON } from './data';
+import { sortModels } from './labels';
 
 const REFOCUS_ROOT = asset('refocus/');
 
@@ -70,10 +71,11 @@ export function cocExampleFrame(photo: PhotoRef, meta: RefocusMeta, model: strin
   return frameUrl(photo, meta, model, plane, kIndex);
 }
 
+// Na ordem de exibição (MODEL_ORDER): o primeiro é o modelo padrão das seções 2 e 3.
 function photoModels(photo: RefocusPhoto, meta: RefocusMeta): string[] {
   // index.json lista só os modelos com todos os quadros prontos.
-  if (photo.models && photo.models.length) return photo.models;
-  return meta.models.filter((m) => m.complete).map((m) => m.name);
+  const names = photo.models?.length ? photo.models : meta.models.filter((m) => m.complete).map((m) => m.name);
+  return sortModels(names);
 }
 
 // Proporção da foto (largura/altura), usada no CSS (--ar) para limitar o palco à tela.

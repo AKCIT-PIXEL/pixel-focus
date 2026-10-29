@@ -2,7 +2,21 @@
 import { t, langFromDocument, localeTag } from './i18n';
 import { el } from './dom';
 
+// Ordem de exibição dos modelos: o nosso (v2-fase2) primeiro e o dos pesos do artigo por último.
+// Os manifestos em static/ listam os modelos em outra ordem; a página reordena com sortModels.
+export const MODEL_ORDER = ['v2-fase2', 'synth-2gpu', 'official'];
+
+// Ordena pela MODEL_ORDER; modelos desconhecidos vão para o fim, na ordem original.
+export function sortModels(models: string[]): string[] {
+  const rank = (m: string): number => {
+    const i = MODEL_ORDER.indexOf(m);
+    return i < 0 ? MODEL_ORDER.length : i;
+  };
+  return [...models].sort((a, b) => rank(a) - rank(b));
+}
+
 // Só usado nos scripts de cliente: o idioma vem do <html lang>.
+// Rótulos exibidos: renomear um modelo é mudar só aqui.
 function modelLabels(): Record<string, string> {
   return { official: t(langFromDocument()).common.officialModel };
 }

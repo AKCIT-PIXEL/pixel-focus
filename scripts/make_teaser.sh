@@ -8,13 +8,13 @@
 # Sem libsvtav1 a versão WebM/AV1 é pulada; sem libwebp o pôster é uma cópia do quadro;
 # sem drawtext o título da OG é escrito com Pillow (scripts/og_title.py, via uv).
 #
-# Uso: PHOTO=cello MODEL=official K_INDEX=4 bash scripts/make_teaser.sh
+# Uso: PHOTO=0 MODEL=v2-fase2 K_INDEX=5 bash scripts/make_teaser.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PHOTO="${PHOTO:-cello}"
-MODEL="${MODEL:-official}"
-K_INDEX="${K_INDEX:-4}"     # índice em meta.ks (4 → K = 40)
+PHOTO="${PHOTO:-0}"         # no cello o v2-fase2 quase não desfoca; na foto 0 o bokeh aparece
+MODEL="${MODEL:-v2-fase2}"  # nosso modelo principal
+K_INDEX="${K_INDEX:-5}"     # índice em meta.ks (5 → K = 50, o máximo: o v2-fase2 desfoca bem menos que o official)
 HOLD="${HOLD:-0.6}"         # duração de cada quadro na sequência, em s (inclui a transição)
 FADE="${FADE:-0.3}"         # duração do crossfade, em s
 FPS="${FPS:-30}"

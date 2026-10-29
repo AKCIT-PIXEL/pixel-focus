@@ -3,7 +3,8 @@
 **Nome provisório:** “Pixel Focus” ainda não é definitivo e pode mudar.
 
 Project page estática do trabalho de refocagem generativa da equipe AKCIT-PIXEL
-(DeblurNet → DepthPro → BokehNet), comparando os checkpoints `official`, `synth-2gpu` e `v2-fase2`.
+(DeblurNet → DepthPro → BokehNet), com foco no nosso checkpoint de BokehNet `v2-fase2`, comparado ao `synth-2gpu` (também nosso) e ao `official`
+(pesos do GenFocus, que replicamos e modificamos). A ordem de exibição fica em `MODEL_ORDER` (`src/lib/labels.ts`).
 Este repositório contém só o site; os assets que ele mostra são gerados à parte (ver
 [De onde vêm os assets](#de-onde-vêm-os-assets)).
 
@@ -46,12 +47,13 @@ absoluta (e para o canonical). O workflow `.github/workflows/pages.yml` faz isso
 astro.config.mjs           base via SITE_BASE; publicDir = static/; i18n (en na raiz, pt em /pt/)
 src/pages/index.astro      página em inglês (/)
 src/pages/pt/index.astro   página em português (/pt/)
-src/components/Page.astro  monta as 7 seções e o rodapé para o idioma recebido
+src/components/Page.astro  monta as 9 seções e o rodapé para o idioma recebido
 src/layouts/Base.astro     <head>: meta, OG/Twitter, canonical e hreflang por idioma, favicon
-src/components/            uma seção por componente (SectionNav, Hero, Pipeline, Refocus, Gallery,
-                           ModelCompare, OcrPlaceholder, MethodDiagram, Credits)
+src/components/            uma seção por componente (SectionNav, Hero, Pipeline, Refocus, Upload, Gallery,
+                           Changes, ModelCompare, OcrPlaceholder, MethodDiagram, Credits)
 src/lib/                   widgets.ts (slider antes/depois, botões, crossfade, placeholder sem dados),
-                           dom.ts, data.ts, labels.ts, dados de refocus/compare, asset()
+                           dom.ts, data.ts, labels.ts (ordem e rótulos dos modelos), upload.ts (seção
+                           "Teste com sua foto"), dados de refocus/compare, asset()
 src/lib/i18n.ts            todo o texto visível da página, em pt e en
 src/styles/global.css      Tailwind (@theme) + classes dos widgets montados por JS
 static/compare/            seção 5 e galeria de bokeh
@@ -78,7 +80,7 @@ num dicionário `{ pt, en }`. O `en` é tipado pelo `pt`, então uma chave que f
 ## Vídeo do topo e imagem OG
 
 ```sh
-bash scripts/make_teaser.sh            # PHOTO=cello MODEL=official K_INDEX=4 por padrão
+bash scripts/make_teaser.sh            # PHOTO=0 MODEL=v2-fase2 K_INDEX=5 por padrão
 ```
 
 Usa o `ffmpeg-full` do Homebrew (`/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg`) quando existe; a variável
@@ -88,6 +90,21 @@ título via `drawtext` e fonte SF do sistema (sem `drawtext`, via `scripts/og_ti
 `OG_TITLE`/`OG_SUBTITLE` (pt) e `OG_TITLE_EN`/`OG_SUBTITLE_EN` (en).
 Com as mesmas entradas, a saída é idêntica byte a byte. Rodar de novo depois de cada atualização de
 `static/refocus/` e depois rebuildar (o `<video>` só lista o WebM se ele existir no build).
+
+## Teste com sua foto (`PUBLIC_REFOCUS_API`)
+
+A seção "Teste com sua foto" (`src/components/Upload.astro`, `src/lib/upload.ts`) envia a foto para um
+servidor de refocagem definido no build:
+
+```sh
+PUBLIC_REFOCUS_API=https://exemplo/refocus pnpm build
+```
+
+Contrato: `POST` multipart/form-data com `image` (JPEG, lado maior ≤ 1024 px), `focus_x` e `focus_y`
+(0–1, relativos à foto), `k` (número) e `model` (id, ex.: `v2-fase2`); a resposta é a imagem resultante
+(`image/*`). O servidor precisa liberar CORS para a origem do site. Sem a variável (o padrão hoje, já que
+não há GPU para hospedar), a seção funciona até o botão Processar, que fica desativado, e a foto não sai
+do navegador.
 
 ## De onde vêm os assets
 

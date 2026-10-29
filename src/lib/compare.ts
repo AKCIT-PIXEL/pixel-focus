@@ -1,6 +1,7 @@
 // Amostras dos datasets bokeh-eval-* (static/compare/), geradas offline pelo pipeline interno.
 import { asset } from './asset';
 import { fetchJSON } from './data';
+import { sortModels } from './labels';
 
 export const COMPARE_ROOT = asset('compare/');
 
@@ -31,7 +32,8 @@ export interface CompareData {
 async function fetchCompareData(): Promise<CompareData> {
   const index = await fetchJSON<{ models: string[]; scenes: { meta: string }[] }>(`${COMPARE_ROOT}index.json`);
   const metas = await Promise.all(index.scenes.map((s) => fetchJSON<CompareMeta>(COMPARE_ROOT + s.meta)));
-  return { models: index.models, metas };
+  // Na ordem de exibição (MODEL_ORDER): o primeiro é o modelo padrão das seções 4 e 5.
+  return { models: sortModels(index.models), metas };
 }
 
 // A galeria de bokeh (seção 4) e a comparação (seção 5) usam os mesmos dados; busca uma vez só.

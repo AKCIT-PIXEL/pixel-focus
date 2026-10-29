@@ -33,9 +33,6 @@ const s = t(toLang(Astro.currentLocale));
 
   const s = t(langFromDocument());
 
-  // Checkpoint em destaque na galeria de bokeh (seção 4).
-  const FEATURED_MODEL = 'v2-fase2';
-
   interface DeblurScene {
     scene_id: string;
     distance: string;
@@ -65,9 +62,9 @@ const s = t(toLang(Astro.currentLocale));
   }
 
   function initBokehGallery(container: HTMLElement, { models, metas }: CompareData): void {
-    // Prefere o checkpoint mais recente; a comparação entre modelos fica na seção 5.
-    // Só entram cenas que têm o modelo escolhido.
-    const model = [FEATURED_MODEL, ...models].find((m) => metas.some((meta) => meta.models[m]));
+    // Prefere o primeiro modelo da ordem de exibição (MODEL_ORDER, já aplicada em models);
+    // a comparação entre modelos fica na seção 5. Só entram cenas que têm o modelo escolhido.
+    const model = models.find((m) => metas.some((meta) => meta.models[m]));
     const scenes = model ? metas.filter((meta) => meta.models[model]) : [];
     if (!model || !scenes.length) throw new Error('compare data has no scene with a model');
     const slider = createBeforeAfter({ before: '', after: '', alt: s.gallery.bokehAlt });

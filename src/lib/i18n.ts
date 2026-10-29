@@ -28,7 +28,9 @@ const pt = {
     links: {
       pipeline: 'Como funciona',
       refocus: 'Refocagem',
+      upload: 'Sua foto',
       gallery: 'Antes e depois',
+      changes: 'Nossas mudanças',
       models: 'Modelos',
       ocr: 'OCR',
       credits: 'Método',
@@ -45,6 +47,8 @@ const pt = {
     paperLink: 'Artigo do GenFocus (arXiv)',
     hfLink: 'Datasets (HF)',
     codeSoon: 'Código (em breve)',
+    basedOn: `Baseado no <a href="https://generative-refocusing.github.io/" target="_blank" rel="noopener">GenFocus</a>:
+    replicamos o método e depois o modificamos.`,
     videoSection: 'Vídeo de demonstração',
     videoLabel: 'Varredura do plano de foco numa foto, do fundo ao primeiro plano e de volta',
     tagline: `A partir de <b>uma única foto</b>, recuperamos a imagem toda em foco, estimamos a profundidade e sintetizamos um desfoque
@@ -70,7 +74,7 @@ const pt = {
   refocus: {
     title: 'Refocagem interativa',
     lead: 'Clique na foto para escolher o plano de foco. O controle deslizante muda a intensidade do desfoque (K).',
-    leadModels: 'Os modelos recebem o mesmo K, mas respondem de forma diferente: o oficial produz o desfoque mais forte, e nos ajustados pela equipe o desfoque é mais contido.',
+    leadModels: 'A página abre no v2-fase2, o nosso modelo; o official (pesos originais do artigo) fica para comparação. Todos recebem o mesmo K, mas respondem de forma diferente: nos nossos modelos o desfoque é mais contido que no official.',
     placeholder: 'A refocagem por clique aparece aqui em breve.',
     stage: 'Foto refocada',
     hint: 'Clique para focar',
@@ -80,6 +84,56 @@ const pt = {
     kLabel: 'Desfoque: ',
     k0: 'K = 0 (tudo em foco)',
     status: (plane: number, total: number, model: string) => `Plano de foco ${plane} de ${total} · ${model}`,
+  },
+  upload: {
+    title: 'Teste com sua foto',
+    lead: 'Escolha uma foto, clique nela para definir o plano de foco, ajuste o desfoque (K) e escolha o modelo.',
+    drop: 'Arraste uma foto para cá ou clique para escolher',
+    dropHint: 'JPEG, PNG ou WebP, até 20 MB. No celular, dá para tirar a foto na hora.',
+    errorType: 'Formato não suportado. Use uma foto JPEG, PNG ou WebP.',
+    errorSize: 'A foto passa de 20 MB. Escolha uma menor.',
+    errorRead: 'Não foi possível abrir essa imagem. Tente outra foto.',
+    previewAlt: 'Sua foto; clique para definir o plano de foco',
+    focusAt: (x: number, y: number) => `Foco em ${Math.round(x * 100)}% × ${Math.round(y * 100)}% da foto`,
+    focusNone: 'Clique na foto para escolher o plano de foco.',
+    modelLabel: 'Modelo:',
+    process: 'Processar',
+    processing: 'Processando…',
+    reset: 'Testar outra foto',
+    soon: 'Em breve: o processamento precisa de um servidor com GPU.',
+    privacy: 'Sua foto não sai do navegador.',
+    privacyApi: 'Ao processar, a foto (reduzida a 1024 px) é enviada ao servidor de processamento.',
+    errorTimeout: 'O servidor demorou demais para responder. Tente de novo.',
+    errorServer: (status: number) => `O servidor devolveu um erro (HTTP ${status}). Tente de novo mais tarde.`,
+    errorNetwork: 'Não foi possível falar com o servidor. Confira a conexão e tente de novo.',
+    errorBadResponse: 'O servidor não devolveu uma imagem. Tente de novo mais tarde.',
+    errorUnexpected: 'Algo deu errado ao processar a foto. Tente de novo.',
+    resultAlt: 'Sua foto e o resultado refocado',
+    before: 'Original',
+    after: (model: string) => `BokehNet ${model}`,
+  },
+  changes: {
+    title: 'Do GenFocus ao nosso modelo',
+    lead: 'O ponto de partida foi reproduzir o GenFocus como publicado; depois mudamos a avaliação e o treino do BokehNet.',
+    steps: [
+      {
+        title: 'Replicamos',
+        body: `Rodamos o pipeline original do GenFocus (DeblurNet → DepthPro → BokehNet) com os pesos do artigo, o checkpoint
+        <code>official</code>.`,
+      },
+      {
+        title: 'Modificamos',
+        body: `Corrigimos a escala de K: os benchmarks publicam K como diâmetro do círculo de confusão, e o BokehNet é condicionado pelo raio.
+        No protocolo novo, usado para avaliar o <code>v2-fase2</code>, as imagens têm lado maior de 1024 px (o <code>official</code> e
+        o <code>synth-2gpu</code> foram avaliados no protocolo anterior, a 544 px). Treinamos o BokehNet com dados sintéticos (<code>synth-2gpu</code>) e fizemos
+        um ajuste fino em uma segunda fase (<code>v2-fase2</code>).`,
+      },
+      {
+        title: 'Resultado',
+        body: `O <code>v2-fase2</code> é o nosso modelo principal. Veja os três checkpoints lado a lado na
+        <a href="#models">comparação dos modelos</a>.`,
+      },
+    ],
   },
   gallery: {
     title: 'Antes e depois',
@@ -94,8 +148,8 @@ const pt = {
   },
   models: {
     title: 'Comparação dos modelos BokehNet',
-    lead: `A mesma cena nos três checkpoints: <code>official</code> (pesos do artigo), <code>synth-2gpu</code> e <code>v2-fase2</code>
-      (nossos). Cada modelo abre no K que melhor reproduz o alvo real e tem o próprio controle de K.`,
+    lead: `A mesma cena nos três checkpoints: <code>v2-fase2</code> e <code>synth-2gpu</code> (nossos) e <code>official</code>
+      (pesos do artigo, para comparação). Cada modelo abre no K que melhor reproduz o alvo real e tem o próprio controle de K.`,
     note: `Os modelos foram avaliados em protocolos diferentes: <code>official</code> e <code>synth-2gpu</code> a 544 px com grade de 8 valores
       de K, e <code>v2-fase2</code> a 1024 px com grade de 9. Por isso cada controle usa a grade do seu modelo, rotulada em relação ao K de
       referência (K<sub>gt</sub>), e as posições dos controles não se correspondem entre modelos.`,
@@ -119,7 +173,8 @@ const pt = {
   credits: {
     title: 'Método e créditos',
     body: `Este trabalho parte do <a href="https://generative-refocusing.github.io/" target="_blank" rel="noopener">GenFocus</a>
-    (Generative Refocusing) e usa o <a href="https://github.com/apple/ml-depth-pro" target="_blank" rel="noopener">DepthPro</a>
+    (Generative Refocusing): replicamos o método com os pesos do artigo (<code>official</code>) e depois o modificamos.
+    Usa o <a href="https://github.com/apple/ml-depth-pro" target="_blank" rel="noopener">DepthPro</a>
     para estimar profundidade. Os checkpoints <code>synth-2gpu</code> e <code>v2-fase2</code> foram treinados pela equipe AKCIT-PIXEL.
     Imagens de avaliação dos datasets públicos em
     <a href="https://huggingface.co/AKCITPixel3" target="_blank" rel="noopener">AKCITPixel3</a>.
@@ -164,7 +219,9 @@ const en: typeof pt = {
     links: {
       pipeline: 'How it works',
       refocus: 'Refocusing',
+      upload: 'Your photo',
       gallery: 'Before and after',
+      changes: 'Our changes',
       models: 'Models',
       ocr: 'OCR',
       credits: 'Method',
@@ -180,6 +237,8 @@ const en: typeof pt = {
     paperLink: 'GenFocus paper (arXiv)',
     hfLink: 'Datasets (HF)',
     codeSoon: 'Code (coming soon)',
+    basedOn: `Built on <a href="https://generative-refocusing.github.io/" target="_blank" rel="noopener">GenFocus</a>:
+    we replicated the method and then modified it.`,
     videoSection: 'Demo video',
     videoLabel: 'The focal plane sweeps across a photo, from the background to the foreground and back',
     tagline: `From <b>a single photo</b>, we recover the all-in-focus image, estimate depth and synthesize realistic defocus
@@ -205,7 +264,7 @@ const en: typeof pt = {
   refocus: {
     title: 'Interactive refocusing',
     lead: 'Click the photo to choose the focal plane. The slider sets the blur strength (K).',
-    leadModels: 'All models receive the same K but respond differently: the official one blurs the most, while the team’s fine-tuned models produce a milder blur.',
+    leadModels: 'The page opens on v2-fase2, our model; official (the original paper weights) is there for comparison. All models receive the same K but respond differently: our models produce a milder blur than official.',
     placeholder: 'Click-to-refocus is coming soon.',
     stage: 'Refocused photo',
     hint: 'Click to focus',
@@ -215,6 +274,56 @@ const en: typeof pt = {
     kLabel: 'Blur: ',
     k0: 'K = 0 (all in focus)',
     status: (plane, total, model) => `Focal plane ${plane} of ${total} · ${model}`,
+  },
+  upload: {
+    title: 'Try your own photo',
+    lead: 'Pick a photo, click it to set the focal plane, adjust the blur (K) and choose the model.',
+    drop: 'Drag a photo here or click to choose one',
+    dropHint: 'JPEG, PNG or WebP, up to 20 MB. On a phone you can take the photo right away.',
+    errorType: 'Unsupported format. Please use a JPEG, PNG or WebP photo.',
+    errorSize: 'The photo is larger than 20 MB. Please choose a smaller one.',
+    errorRead: 'This image could not be opened. Please try another photo.',
+    previewAlt: 'Your photo; click to set the focal plane',
+    focusAt: (x, y) => `Focus at ${Math.round(x * 100)}% × ${Math.round(y * 100)}% of the photo`,
+    focusNone: 'Click the photo to choose the focal plane.',
+    modelLabel: 'Model:',
+    process: 'Process',
+    processing: 'Processing…',
+    reset: 'Try another photo',
+    soon: 'Coming soon: processing needs a GPU server.',
+    privacy: 'Your photo never leaves the browser.',
+    privacyApi: 'When you process it, the photo (downscaled to 1024 px) is sent to the processing server.',
+    errorTimeout: 'The server took too long to respond. Please try again.',
+    errorServer: (status) => `The server returned an error (HTTP ${status}). Please try again later.`,
+    errorNetwork: 'Could not reach the server. Check your connection and try again.',
+    errorBadResponse: 'The server did not return an image. Please try again later.',
+    errorUnexpected: 'Something went wrong while processing the photo. Please try again.',
+    resultAlt: 'Your photo and the refocused result',
+    before: 'Original',
+    after: (model) => `BokehNet ${model}`,
+  },
+  changes: {
+    title: 'From GenFocus to our model',
+    lead: 'We started by reproducing GenFocus as published, then changed how BokehNet is evaluated and trained.',
+    steps: [
+      {
+        title: 'Replicated',
+        body: `We ran the original GenFocus pipeline (DeblurNet → DepthPro → BokehNet) with the paper’s weights, the
+        <code>official</code> checkpoint.`,
+      },
+      {
+        title: 'Modified',
+        body: `We fixed the K scale: benchmarks publish K as the circle-of-confusion diameter, while BokehNet is conditioned on the radius.
+        The new protocol, used to evaluate <code>v2-fase2</code>, renders images at a 1024 px long side (<code>official</code> and
+        <code>synth-2gpu</code> were evaluated under the previous protocol, at 544 px). We trained BokehNet on synthetic data (<code>synth-2gpu</code>) and fine-tuned it in
+        a second phase (<code>v2-fase2</code>).`,
+      },
+      {
+        title: 'Result',
+        body: `<code>v2-fase2</code> is our main model. See the three checkpoints side by side in the
+        <a href="#models">model comparison</a>.`,
+      },
+    ],
   },
   gallery: {
     title: 'Before and after',
@@ -229,8 +338,9 @@ const en: typeof pt = {
   },
   models: {
     title: 'BokehNet model comparison',
-    lead: `The same scene across the three checkpoints: <code>official</code> (the paper’s weights), <code>synth-2gpu</code> and
-      <code>v2-fase2</code> (ours). Each model starts at the K that best reproduces the ground truth and has its own K slider.`,
+    lead: `The same scene across the three checkpoints: <code>v2-fase2</code> and <code>synth-2gpu</code> (ours) and
+      <code>official</code> (the paper’s weights, for comparison). Each model starts at the K that best reproduces the ground truth
+      and has its own K slider.`,
     note: `The models were evaluated under different protocols: <code>official</code> and <code>synth-2gpu</code> at 544 px with an
       8-value K grid, and <code>v2-fase2</code> at 1024 px with a 9-value grid. Each slider therefore uses its own model’s grid, labeled
       relative to the reference K (K<sub>gt</sub>), and slider positions do not line up across models.`,
@@ -253,7 +363,8 @@ const en: typeof pt = {
   credits: {
     title: 'Method and credits',
     body: `This work builds on <a href="https://generative-refocusing.github.io/" target="_blank" rel="noopener">GenFocus</a>
-    (Generative Refocusing) and uses <a href="https://github.com/apple/ml-depth-pro" target="_blank" rel="noopener">DepthPro</a>
+    (Generative Refocusing): we replicated the method with the paper’s weights (<code>official</code>) and then modified it.
+    It uses <a href="https://github.com/apple/ml-depth-pro" target="_blank" rel="noopener">DepthPro</a>
     for depth estimation. The <code>synth-2gpu</code> and <code>v2-fase2</code> checkpoints were trained by the AKCIT-PIXEL team.
     Evaluation images come from the public datasets at
     <a href="https://huggingface.co/AKCITPixel3" target="_blank" rel="noopener">AKCITPixel3</a>.

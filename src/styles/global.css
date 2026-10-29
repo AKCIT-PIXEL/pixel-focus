@@ -514,6 +514,34 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* Teste com sua foto: área de soltar, prévia com ponto de foco        */
+  /* ------------------------------------------------------------------ */
+  .upload-drop {
+    @apply mx-auto max-w-[640px] cursor-pointer rounded-[10px] border-2 border-dashed border-line bg-paper px-6 py-12 text-center transition-colors hover:border-[#b5b5b5];
+  }
+
+  .upload-drop.is-dragging {
+    @apply border-accent bg-[#f0f8fe];
+  }
+
+  .upload-error {
+    @apply mx-auto mt-3 max-w-[640px] rounded-md bg-[#feecf0] px-3 py-2 text-center text-sm text-[#b5223f];
+  }
+
+  /* A prévia usa .refocus-stage; durante o envio fica esmaecida */
+  .refocus-stage[aria-busy='true'] {
+    opacity: 0.6;
+  }
+
+  .btn-primary {
+    @apply border-ink bg-ink text-white hover:bg-black;
+  }
+
+  .btn:disabled {
+    @apply cursor-not-allowed opacity-50 hover:border-line;
+  }
+
+  /* ------------------------------------------------------------------ */
   /* Seção 7: diagrama do método (SVG gerado no build)                   */
   /* ------------------------------------------------------------------ */
   .method-diagram svg {

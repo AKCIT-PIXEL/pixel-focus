@@ -4,7 +4,7 @@ import { t, toLang, LOCALES } from '../lib/i18n';
 
 const lang = toLang(Astro.currentLocale);
 const s = t(lang);
-const links = (['pipeline', 'refocus', 'gallery', 'models', 'ocr', 'credits'] as const).map((id) => ({ id, label: s.nav.links[id] }));
+const links = (['pipeline', 'refocus', 'upload', 'gallery', 'changes', 'models', 'ocr', 'credits'] as const).map((id) => ({ id, label: s.nav.links[id] }));
 // Seletor de idioma: os dois sempre visíveis; o outro idioma aponta para a mesma página nele.
 const langs = (['en', 'pt'] as const).map((code) => ({
   code,
